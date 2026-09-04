@@ -1,73 +1,127 @@
 import pandas as pd
 
-# Step 1: Load the dataset
+
+# Load the raw COVID-19 dataset
 df = pd.read_csv("data/covid_data.csv")
 
-# Step 2: Check dataset shape
-print("Dataset Shape:")
+print("COVID-19 DATA MANAGEMENT MODULE")
+
+print("\n1. DATA LOADING")
+print("Dataset loaded successfully.")
+
+# Display the shape of the dataset
+print("\n2. DATA INSPECTION")
+
+print("\nDataset Shape:")
 print(df.shape)
 
-# Step 3: Check column names
+# Display the column names
 print("\nColumn Names:")
 print(df.columns)
 
-# Step 4: Check data types
-print("\nData Types:")
+# Display the data types of all columns
+print("\nData Types Before Cleaning:")
 print(df.dtypes)
 
-# Step 5: Convert Date column to datetime
+# Convert Date column from string to datetime
 df["Date"] = pd.to_datetime(df["Date"])
 
-# Step 6: Check missing values
-print("\nMissing Values:")
+print("\nDate column converted from string to datetime.")
+
+print("\nData Types After Date Conversion:")
+print(df.dtypes)
+
+# Find missing values in each column
+print("\n3. MISSING VALUE ANALYSIS")
+
+print("\nMissing Values Before Cleaning:")
 print(df.isnull().sum())
 
-# Step 7: Handle missing Province/State values
+# Display the first five records where Province/State is missing
+print("\nFirst Five Records with Missing Province/State:")
+print(df[df["Province/State"].isnull()].head())
+
+# Replace missing Province/State values with Unknown
 df["Province/State"] = df["Province/State"].fillna("Unknown")
 
-# Step 8: Investigate missing Recovered values
-print("\nCountries with Missing Recovered Values:")
-print(df[df["Recovered"].isnull()]["Country/Region"].unique())
+print("\nMissing Province/State values handled.")
 
-# Step 9: Handle missing Recovered values
+print("\nMissing Values After Province/State Cleaning:")
+print(df.isnull().sum())
+
+# Find the number of countries having missing Recovered values
+missing_recovered_countries = df[
+    df["Recovered"].isnull()
+]["Country/Region"].unique()
+
+print("\nNumber of Countries with Missing Recovered Values:")
+print(len(missing_recovered_countries))
+
+print("\nCountries with Missing Recovered Values:")
+print(missing_recovered_countries)
+
+# Display the first five records where Recovered is missing
+print("\nFirst Five Records with Missing Recovered Values:")
+print(df[df["Recovered"].isnull()].head())
+
+# Replace missing Recovered values with zero
 df["Recovered"] = df["Recovered"].fillna(0)
 
-# Step 10: Check duplicate rows
+print("\nMissing Recovered values handled.")
+
+print("\nMissing Values After Cleaning:")
+print(df.isnull().sum())
+
+# Check duplicate records
+print("\n4. DATA VALIDATION")
+
 print("\nDuplicate Rows:")
 print(df.duplicated().sum())
 
-# Step 11: Check for negative values
+# Check negative Confirmed values
 print("\nNegative Confirmed Values:")
 print((df["Confirmed"] < 0).sum())
 
-print("Negative Recovered Values:")
+# Check negative Recovered values
+print("\nNegative Recovered Values:")
 print((df["Recovered"] < 0).sum())
 
-print("Negative Death Values:")
+# Check negative Death values
+print("\nNegative Death Values:")
 print((df["Deaths"] < 0).sum())
 
-# Step 12: Check date range
-print("\nDate Range:")
-print("Earliest Date:", df["Date"].min())
-print("Latest Date:", df["Date"].max())
+# Display the earliest date
+print("\nEarliest Date:")
+print(df["Date"].min())
 
-# Step 13: Check number of unique countries
+# Display the latest date
+print("\nLatest Date:")
+print(df["Date"].max())
+
+# Display all unique countries
+print("\nUnique Countries/Regions:")
+print(df["Country/Region"].unique())
+
+# Display the number of unique countries
 print("\nNumber of Unique Countries/Regions:")
 print(df["Country/Region"].nunique())
 
-# Step 14: Display first five rows
-print("\nFirst Five Rows:")
+# Display the first five records after cleaning
+print("\n5. FINAL DATA INSPECTION")
+
+print("\nFirst Five Rows of Cleaned Data:")
 print(df.head())
 
-# Step 15: Verify final data types
-print("\nFinal Data Types:")
-print(df.dtypes)
-
-# Step 16: Statistical summary
+# Display statistical summary
 print("\nStatistical Summary:")
 print(df.describe())
 
-# Step 17: Save cleaned dataset
+# Save the cleaned dataset
 df.to_csv("data/cleaned_covid_data.csv", index=False)
 
-print("\nCleaned dataset saved successfully!")
+print("\n6. CLEANED DATASET")
+
+print("Cleaned dataset saved successfully.")
+print("File: data/cleaned_covid_data.csv")
+
+print("\nModule 1 Data Management Completed Successfully.")

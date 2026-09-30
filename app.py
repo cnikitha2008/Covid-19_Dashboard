@@ -163,16 +163,26 @@ with tab1:
         st.pyplot(fig1)
         
     with col_chart2:
-        # Line Chart
+        # Line Chart — each metric on its own subplot so Deaths trend is clearly visible
+        # (Plotting all on one axis hides Deaths because Confirmed is ~100x larger)
         daily_global = df.groupby("Date")[["Confirmed", "Recovered", "Deaths"]].sum().reset_index()
-        fig2, ax2 = plt.subplots()
-        ax2.plot(daily_global["Date"], daily_global["Confirmed"], label="Confirmed")
-        ax2.plot(daily_global["Date"], daily_global["Recovered"], label="Recovered")
-        ax2.plot(daily_global["Date"], daily_global["Deaths"], label="Deaths")
-        ax2.set_xlabel("Date")
-        ax2.set_ylabel("Cases")
-        ax2.set_title("Worldwide Trend Over Time")
-        ax2.legend()
+        daily_global = daily_global.sort_values("Date")   # make sure sorted by date
+
+        fig2, (ax_conf, ax_rec, ax_dth) = plt.subplots(3, 1, figsize=(6, 8), sharex=True)
+
+        ax_conf.plot(daily_global["Date"], daily_global["Confirmed"], color='blue')
+        ax_conf.set_title("Confirmed Over Time")
+        ax_conf.set_ylabel("Cases")
+
+        ax_rec.plot(daily_global["Date"], daily_global["Recovered"], color='orange')
+        ax_rec.set_title("Recovered Over Time")
+        ax_rec.set_ylabel("Cases")
+
+        ax_dth.plot(daily_global["Date"], daily_global["Deaths"], color='red')
+        ax_dth.set_title("Deaths Over Time")
+        ax_dth.set_ylabel("Deaths")
+        ax_dth.set_xlabel("Date")
+
         plt.xticks(rotation=45)
         plt.tight_layout()
         st.pyplot(fig2)

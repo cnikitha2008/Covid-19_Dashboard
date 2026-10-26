@@ -1,127 +1,200 @@
+import numpy as np
 import pandas as pd
 
 
-# Load the raw COVID-19 dataset
-df = pd.read_csv("data/covid_data.csv")
+# ==============================================================================
+# REUSABLE FUNCTIONS FOR DATA MANAGEMENT (MODULE 1)
+# ==============================================================================
 
-print("COVID-19 DATA MANAGEMENT MODULE")
+def load_raw_data(filepath="data/covid_data.csv"):
+    """Load the raw COVID-19 dataset from CSV."""
+    return pd.read_csv(filepath)
 
-print("\n1. DATA LOADING")
-print("Dataset loaded successfully.")
 
-# Display the shape of the dataset
-print("\n2. DATA INSPECTION")
+def clean_covid_data(df, assumption_rate=0.80):
+    """
+    Clean and preprocess the COVID-19 dataset:
+    - Converts Date column to datetime
+    - Fills missing Province/State values with 'Unknown'
+    - Fills missing Recovered values or estimates them using assumption rate
+    - Computes Active cases (Confirmed - Recovered - Deaths)
+    - Sorts records chronologically by Date and Country/Region
+    """
+    df = df.copy()
 
-print("\nDataset Shape:")
-print(df.shape)
+    # Convert Date column from string to datetime
+    df["Date"] = pd.to_datetime(df["Date"])
 
-# Display the column names
-print("\nColumn Names:")
-print(df.columns)
+    # Handle missing Province/State values
+    if "Province/State" not in df.columns:
+        df["Province/State"] = "Unknown"
+    df["Province/State"] = df["Province/State"].fillna("Unknown")
 
-# Display the data types of all columns
-print("\nData Types Before Cleaning:")
-print(df.dtypes)
+    # Handle missing Recovered values
+    if "Recovered" not in df.columns:
+        df["Recovered"] = np.nan
+    df["Recovered"] = df["Recovered"].fillna(0)
 
-# Convert Date column from string to datetime
-df["Date"] = pd.to_datetime(df["Date"])
+    # Apply recovery assumption where recovery is 0 or missing
+    missing_recovery = df["Recovered"] == 0
+    df.loc[missing_recovery, "Recovered"] = df.loc[missing_recovery, "Confirmed"] * assumption_rate
 
-print("\nDate column converted from string to datetime.")
+    # Ensure Recovered never exceeds Confirmed and is never negative
+    df["Recovered"] = np.where(df["Recovered"] > df["Confirmed"], df["Confirmed"], df["Recovered"])
+    df["Recovered"] = np.where(df["Recovered"] < 0, 0, df["Recovered"])
 
-print("\nData Types After Date Conversion:")
-print(df.dtypes)
+    # Calculate Active cases
+    df["Active"] = df["Confirmed"] - df["Recovered"] - df["Deaths"]
 
-# Find missing values in each column
-print("\n3. MISSING VALUE ANALYSIS")
+    # Sort values chronologically and by Country
+    df = df.sort_values(by=["Date", "Country/Region"])
 
-print("\nMissing Values Before Cleaning:")
-print(df.isnull().sum())
+    return df
 
-# Display the first five records where Province/State is missing
-print("\nFirst Five Records with Missing Province/State:")
-print(df[df["Province/State"].isnull()].head())
 
-# Replace missing Province/State values with Unknown
-df["Province/State"] = df["Province/State"].fillna("Unknown")
+def load_and_clean_data(cleaned_path="data/cleaned_covid_data.csv", raw_path="data/covid_data.csv"):
+    """
+    Load data from cleaned CSV if available, otherwise fallback to raw CSV,
+    clean the data, and return the cleaned DataFrame.
+    """
+    try:
+        df = pd.read_csv(cleaned_path)
+    except Exception:
+        df = pd.read_csv(raw_path)
 
-print("\nMissing Province/State values handled.")
+    return clean_covid_data(df)
 
-print("\nMissing Values After Province/State Cleaning:")
-print(df.isnull().sum())
 
-# Find the number of countries having missing Recovered values
-missing_recovered_countries = df[
-    df["Recovered"].isnull()
-]["Country/Region"].unique()
+# ==============================================================================
+# STANDALONE CLI DEMONSTRATION
+# ==============================================================================
 
-print("\nNumber of Countries with Missing Recovered Values:")
-print(len(missing_recovered_countries))
+def run_standalone_demo():
+    # Load the raw COVID-19 dataset
+    df = pd.read_csv("data/covid_data.csv")
 
-print("\nCountries with Missing Recovered Values:")
-print(missing_recovered_countries)
+    print("COVID-19 DATA MANAGEMENT MODULE")
 
-# Display the first five records where Recovered is missing
-print("\nFirst Five Records with Missing Recovered Values:")
-print(df[df["Recovered"].isnull()].head())
+    print("\n1. DATA LOADING")
+    print("Dataset loaded successfully.")
 
-# Replace missing Recovered values with zero
-df["Recovered"] = df["Recovered"].fillna(0)
+    # Display the shape of the dataset
+    print("\n2. DATA INSPECTION")
 
-print("\nMissing Recovered values handled.")
+    print("\nDataset Shape:")
+    print(df.shape)
 
-print("\nMissing Values After Cleaning:")
-print(df.isnull().sum())
+    # Display the column names
+    print("\nColumn Names:")
+    print(df.columns)
 
-# Check duplicate records
-print("\n4. DATA VALIDATION")
+    # Display the data types of all columns
+    print("\nData Types Before Cleaning:")
+    print(df.dtypes)
 
-print("\nDuplicate Rows:")
-print(df.duplicated().sum())
+    # Convert Date column from string to datetime
+    df["Date"] = pd.to_datetime(df["Date"])
 
-# Check negative Confirmed values
-print("\nNegative Confirmed Values:")
-print((df["Confirmed"] < 0).sum())
+    print("\nDate column converted from string to datetime.")
 
-# Check negative Recovered values
-print("\nNegative Recovered Values:")
-print((df["Recovered"] < 0).sum())
+    print("\nData Types After Date Conversion:")
+    print(df.dtypes)
 
-# Check negative Death values
-print("\nNegative Death Values:")
-print((df["Deaths"] < 0).sum())
+    # Find missing values in each column
+    print("\n3. MISSING VALUE ANALYSIS")
 
-# Display the earliest date
-print("\nEarliest Date:")
-print(df["Date"].min())
+    print("\nMissing Values Before Cleaning:")
+    print(df.isnull().sum())
 
-# Display the latest date
-print("\nLatest Date:")
-print(df["Date"].max())
+    # Display the first five records where Province/State is missing
+    print("\nFirst Five Records with Missing Province/State:")
+    print(df[df["Province/State"].isnull()].head())
 
-# Display all unique countries
-print("\nUnique Countries/Regions:")
-print(df["Country/Region"].unique())
+    # Replace missing Province/State values with Unknown
+    df["Province/State"] = df["Province/State"].fillna("Unknown")
 
-# Display the number of unique countries
-print("\nNumber of Unique Countries/Regions:")
-print(df["Country/Region"].nunique())
+    print("\nMissing Province/State values handled.")
 
-# Display the first five records after cleaning
-print("\n5. FINAL DATA INSPECTION")
+    print("\nMissing Values After Province/State Cleaning:")
+    print(df.isnull().sum())
 
-print("\nFirst Five Rows of Cleaned Data:")
-print(df.head())
+    # Find the number of countries having missing Recovered values
+    missing_recovered_countries = df[
+        df["Recovered"].isnull()
+    ]["Country/Region"].unique()
 
-# Display statistical summary
-print("\nStatistical Summary:")
-print(df.describe())
+    print("\nNumber of Countries with Missing Recovered Values:")
+    print(len(missing_recovered_countries))
 
-# Save the cleaned dataset
-df.to_csv("data/cleaned_covid_data.csv", index=False)
+    print("\nCountries with Missing Recovered Values:")
+    print(missing_recovered_countries)
 
-print("\n6. CLEANED DATASET")
+    # Display the first five records where Recovered is missing
+    print("\nFirst Five Records with Missing Recovered Values:")
+    print(df[df["Recovered"].isnull()].head())
 
-print("Cleaned dataset saved successfully.")
-print("File: data/cleaned_covid_data.csv")
+    # Replace missing Recovered values with zero
+    df["Recovered"] = df["Recovered"].fillna(0)
 
-print("\nModule 1 Data Management Completed Successfully.")
+    print("\nMissing Recovered values handled.")
+
+    print("\nMissing Values After Cleaning:")
+    print(df.isnull().sum())
+
+    # Check duplicate records
+    print("\n4. DATA VALIDATION")
+
+    print("\nDuplicate Rows:")
+    print(df.duplicated().sum())
+
+    # Check negative Confirmed values
+    print("\nNegative Confirmed Values:")
+    print((df["Confirmed"] < 0).sum())
+
+    # Check negative Recovered values
+    print("\nNegative Recovered Values:")
+    print((df["Recovered"] < 0).sum())
+
+    # Check negative Death values
+    print("\nNegative Death Values:")
+    print((df["Deaths"] < 0).sum())
+
+    # Display the earliest date
+    print("\nEarliest Date:")
+    print(df["Date"].min())
+
+    # Display the latest date
+    print("\nLatest Date:")
+    print(df["Date"].max())
+
+    # Display all unique countries
+    print("\nUnique Countries/Regions:")
+    print(df["Country/Region"].unique())
+
+    # Display the number of unique countries
+    print("\nNumber of Unique Countries/Regions:")
+    print(df["Country/Region"].nunique())
+
+    # Display the first five records after cleaning
+    print("\n5. FINAL DATA INSPECTION")
+
+    print("\nFirst Five Rows of Cleaned Data:")
+    print(df.head())
+
+    # Display statistical summary
+    print("\nStatistical Summary:")
+    print(df.describe())
+
+    # Save the cleaned dataset
+    df.to_csv("data/cleaned_covid_data.csv", index=False)
+
+    print("\n6. CLEANED DATASET")
+
+    print("Cleaned dataset saved successfully.")
+    print("File: data/cleaned_covid_data.csv")
+
+    print("\nModule 1 Data Management Completed Successfully.")
+
+
+if __name__ == "__main__":
+    run_standalone_demo()

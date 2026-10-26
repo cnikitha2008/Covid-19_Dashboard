@@ -44,17 +44,25 @@ st.markdown(
     section[data-testid="stSidebar"] {
         display: none !important;
     }
-    /* Style menu buttons so they appear as large, clean clickable cards */
+    /* Style menu and action buttons: compact, sleek rectangles with modern aesthetics */
     div.stButton > button {
-        font-size: 1.15rem !important;
+        font-size: 1.05rem !important;
         font-weight: 600 !important;
-        padding: 0.85rem 1.25rem !important;
-        border-radius: 8px !important;
-        margin-bottom: 0.4rem !important;
-        transition: all 0.2s ease-in-out !important;
+        padding: 0.55rem 1.15rem !important;
+        border-radius: 9px !important;
+        margin-bottom: 0.5rem !important;
+        border: 1px solid rgba(120, 144, 156, 0.3) !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
     }
     div.stButton > button:hover {
-        transform: translateY(-2px);
+        transform: translateY(-2px) !important;
+        border-color: #1E88E5 !important;
+        box-shadow: 0 6px 14px rgba(30, 136, 229, 0.16) !important;
+        color: #1E88E5 !important;
+    }
+    div.stButton > button:active {
+        transform: translateY(0px) !important;
     }
     </style>
     """,
@@ -142,29 +150,6 @@ def demonstrate_numpy_and_preprocessing(confirmed_cases):
 
 
 # ==============================================================================
-# WEB SCRAPING DEMO HELPER
-# ------------------------------------------------------------------------------
-def get_covid_news():
-    """
-    Scrapes a short introductory snippet from Wikipedia for live context.
-    Includes timeout and fallback handling if offline or blocked.
-    """
-    try:
-        req = urllib.request.Request(
-            'https://en.wikipedia.org/wiki/COVID-19',
-            headers={'User-Agent': 'Mozilla/5.0'}
-        )
-        html = urllib.request.urlopen(req, timeout=3).read().decode('utf-8')
-        match = re.search(r'<p>(.*?)</p>', html, re.IGNORECASE | re.DOTALL)
-        if match:
-            text = re.sub(r'<[^>]+>', '', match.group(1))
-            return text[:200] + "..."
-    except Exception:
-        pass
-    return "Web scraping news currently unavailable."
-
-
-# ==============================================================================
 # NAVIGATION STATE MANAGEMENT
 # ------------------------------------------------------------------------------
 # Streamlit re-runs the entire script upon user interaction.
@@ -204,23 +189,71 @@ def render_back_button(location_key="top"):
 # ==============================================================================
 if st.session_state["current_page"] == "Home":
     
-    st.title("COVID-19 DATA ANALYSIS DASHBOARD")
+    # Centered Header with title, subtitle, and badge
+    st.markdown(
+        """
+        <div style="text-align: center; padding-top: 1.2rem; padding-bottom: 1.5rem;">
+            <div style="display: inline-block; padding: 4px 14px; background: rgba(30, 136, 229, 0.08); color: #1E88E5; border-radius: 20px; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.8px; margin-bottom: 0.75rem; border: 1px solid rgba(30, 136, 229, 0.25);">
+                🌍 EPIDEMIOLOGICAL DATA INTELLIGENCE
+            </div>
+            <h1 style="font-size: 2.35rem; font-weight: 800; margin: 0; padding-bottom: 0.4rem; letter-spacing: -0.5px;">
+                COVID-19 DATA ANALYSIS DASHBOARD
+            </h1>
+            <p style="color: #6c757d; font-size: 1.05rem; max-width: 620px; margin: 0.3rem auto 0 auto; line-height: 1.5;">
+                Interactive epidemiological intelligence system analyzing confirmed cases, recoveries, mortality trajectories, and geographical comparisons.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     st.markdown("---")
 
-    # List of the 5 analysis menus (Display Name, Target Route Identifier)
-    menu_items = [
-        ("🌍 Worldwide Dashboard", "Worldwide Dashboard"),
-        ("📋 Worldwide Report", "Worldwide Report"),
-        ("🌎 Country Analysis", "Country Analysis"),
-        ("🏙️ State or Province Analysis", "State or Province Analysis"),
-        ("📊 Comparison and Trend", "Comparison and Trend")
-    ]
+    # Centered, compact menu card container to decrease the rectangle size around menu names
+    col_l, col_menu, col_r = st.columns([1.2, 1.9, 1.2])
 
-    # Render only the menu names as clickable buttons
-    # When a user clicks any name, it immediately transitions to that page
-    for display_name, target_page in menu_items:
-        if st.button(display_name, key=f"menu_btn_{target_page}", use_container_width=True):
-            navigate_to(target_page)
+    with col_menu:
+        st.markdown(
+            """
+            <div style="text-align: center; margin-bottom: 0.9rem;">
+                <span style="font-size: 0.88rem; font-weight: 600; color: #78909C; text-transform: uppercase; letter-spacing: 1px;">
+                    Select an Analysis View
+                </span>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # List of the 5 analysis menus (Display Name, Target Route Identifier)
+        menu_items = [
+            ("🌍 Worldwide Dashboard", "Worldwide Dashboard"),
+            ("📋 Worldwide Report", "Worldwide Report"),
+            ("🌎 Country Analysis", "Country Analysis"),
+            ("🏙️ State or Province Analysis", "State or Province Analysis"),
+            ("📊 Comparison and Trend", "Comparison and Trend")
+        ]
+
+        # Render menu names as compact, sleek clickable buttons
+        for display_name, target_page in menu_items:
+            if st.button(display_name, key=f"menu_btn_{target_page}", use_container_width=True):
+                navigate_to(target_page)
+
+        # Subtle summary feature pills below the menu
+        st.markdown(
+            """
+            <div style="display: flex; justify-content: center; gap: 10px; margin-top: 1.5rem; flex-wrap: wrap;">
+                <span style="font-size: 0.78rem; background: rgba(0,0,0,0.04); padding: 4px 10px; border-radius: 6px; color: #666; border: 1px solid rgba(0,0,0,0.06);">
+                    📊 Multi-Metric Aggregation
+                </span>
+                <span style="font-size: 0.78rem; background: rgba(0,0,0,0.04); padding: 4px 10px; border-radius: 6px; color: #666; border: 1px solid rgba(0,0,0,0.06);">
+                    📈 Longitudinal Trends
+                </span>
+                <span style="font-size: 0.78rem; background: rgba(0,0,0,0.04); padding: 4px 10px; border-radius: 6px; color: #666; border: 1px solid rgba(0,0,0,0.06);">
+                    🗺️ Regional Breakdown
+                </span>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 
 # ==============================================================================
@@ -264,14 +297,15 @@ elif st.session_state["current_page"] == "Worldwide Dashboard":
     
     with col_chart1:
         # Pie Chart: Proportions of Active, Recovered, and Deaths
-        fig1, ax1 = plt.subplots()
-        labels = ['Active', 'Recovered', 'Deaths']
+        fig1, ax1 = plt.subplots(figsize=(6, 5))
+        labels = ['Active Cases', 'Recovered Cases', 'Reported Deaths']
         sizes = [active, recovered, deaths]
         colors = ['#ff9999', '#66b3ff', '#ffcc99']
-        ax1.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+        ax1.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90, textprops={'fontsize': 10})
         ax1.axis('equal')
-        ax1.set_title("Global Cases Distribution")
+        ax1.set_title("Global Cases Distribution", fontsize=12, fontweight='bold', pad=12)
         st.pyplot(fig1)
+        st.caption("Distribution Breakdown: Proportional share of active cases, recoveries, and deaths worldwide.")
         
     with col_chart2:
         # Line Chart Subplots: Global Trends Over Time
@@ -279,22 +313,32 @@ elif st.session_state["current_page"] == "Worldwide Dashboard":
         # ensures each scale is clearly legible.
         daily_global = worldwide_analysis.get_worldwide_daily_trends(df)
 
-        fig2, (ax_conf, ax_rec, ax_dth) = plt.subplots(3, 1, figsize=(6, 8), sharex=True)
+        fig2, (ax_conf, ax_rec, ax_dth) = plt.subplots(3, 1, figsize=(6, 8.5))
 
-        ax_conf.plot(daily_global["Date"], daily_global["Confirmed"], color='blue')
-        ax_conf.set_title("Confirmed Over Time")
-        ax_conf.set_ylabel("Cases")
+        ax_conf.plot(daily_global["Date"], daily_global["Confirmed"], color='#1E88E5', linewidth=1.8)
+        ax_conf.set_title("Confirmed Cases Over Time", fontsize=11, fontweight='bold')
+        ax_conf.set_xlabel("Date (Timeline)", fontsize=9, fontweight='semibold')
+        ax_conf.set_ylabel("Confirmed Cases", fontsize=9, fontweight='semibold')
+        ax_conf.grid(True, linestyle="--", alpha=0.4)
+        ax_conf.tick_params(axis='x', rotation=30, labelsize=8)
+        ax_conf.tick_params(axis='y', labelsize=8)
 
-        ax_rec.plot(daily_global["Date"], daily_global["Recovered"], color='orange')
-        ax_rec.set_title("Recovered Over Time")
-        ax_rec.set_ylabel("Cases")
+        ax_rec.plot(daily_global["Date"], daily_global["Recovered"], color='#43A047', linewidth=1.8)
+        ax_rec.set_title("Recovered Cases Over Time", fontsize=11, fontweight='bold')
+        ax_rec.set_xlabel("Date (Timeline)", fontsize=9, fontweight='semibold')
+        ax_rec.set_ylabel("Recovered Cases", fontsize=9, fontweight='semibold')
+        ax_rec.grid(True, linestyle="--", alpha=0.4)
+        ax_rec.tick_params(axis='x', rotation=30, labelsize=8)
+        ax_rec.tick_params(axis='y', labelsize=8)
 
-        ax_dth.plot(daily_global["Date"], daily_global["Deaths"], color='red')
-        ax_dth.set_title("Deaths Over Time")
-        ax_dth.set_ylabel("Deaths")
-        ax_dth.set_xlabel("Date")
+        ax_dth.plot(daily_global["Date"], daily_global["Deaths"], color='#E53935', linewidth=1.8)
+        ax_dth.set_title("Deaths Over Time", fontsize=11, fontweight='bold')
+        ax_dth.set_xlabel("Date (Timeline)", fontsize=9, fontweight='semibold')
+        ax_dth.set_ylabel("Reported Deaths", fontsize=9, fontweight='semibold')
+        ax_dth.grid(True, linestyle="--", alpha=0.4)
+        ax_dth.tick_params(axis='x', rotation=30, labelsize=8)
+        ax_dth.tick_params(axis='y', labelsize=8)
 
-        plt.xticks(rotation=45)
         plt.tight_layout()
         st.pyplot(fig2)
         
@@ -309,8 +353,8 @@ elif st.session_state["current_page"] == "Worldwide Dashboard":
 # ==============================================================================
 # ROUTE 3: WORLDWIDE REPORT PAGE
 # ------------------------------------------------------------------------------
-# Displays top 10 countries table, live web-scraped news snippet,
-# statistical box plot and logarithmic case histogram.
+# Displays top 10 countries table, statistical box plot and logarithmic
+# case distribution histogram.
 # ==============================================================================
 elif st.session_state["current_page"] == "Worldwide Report":
     
@@ -335,11 +379,6 @@ elif st.session_state["current_page"] == "Worldwide Report":
     st.subheader("Top 10 Countries by Confirmed Cases")
     st.dataframe(top_countries, use_container_width=True)
     
-    # Web Scraping Demonstration Section
-    st.markdown("---")
-    st.subheader("Latest COVID-19 Information (Live Web Scraping)")
-    st.info(get_covid_news())
-    
     # Statistical Distribution Analysis: Box Plot & Histogram
     st.markdown("---")
     st.subheader("Statistical Distributions")
@@ -347,20 +386,29 @@ elif st.session_state["current_page"] == "Worldwide Report":
     
     with col_chart3:
         # Box Plot of Confirmed Cases for Top 10 Countries
-        fig3, ax3 = plt.subplots()
-        ax3.boxplot(top_countries["Confirmed"].dropna())
-        ax3.set_title("Box Plot: Confirmed Cases (Top 10)")
-        ax3.set_ylabel("Confirmed Cases")
+        fig3, ax3 = plt.subplots(figsize=(6, 4.5))
+        ax3.boxplot(
+            top_countries["Confirmed"].dropna(),
+            patch_artist=True,
+            boxprops=dict(facecolor='#BBDEFB', color='#1976D2'),
+            medianprops=dict(color='#D32F2F', linewidth=2)
+        )
+        ax3.set_title("Box Plot: Confirmed Cases (Top 10 Nations)", fontsize=11, fontweight='bold', pad=10)
+        ax3.set_xlabel("Top 10 Ranked Nations (X-Axis)", fontsize=10, fontweight='semibold')
+        ax3.set_ylabel("Confirmed Cases Count (Y-Axis)", fontsize=10, fontweight='semibold')
+        ax3.set_xticklabels(["Top 10 Countries"])
+        ax3.grid(True, linestyle="--", alpha=0.4, axis='y')
         st.pyplot(fig3)
         
     with col_chart4:
         # Histogram: Confirmed cases distribution across all records with log scale
-        fig4, ax4 = plt.subplots()
-        ax4.hist(latest_data["Confirmed"].dropna(), bins=20, color='skyblue', edgecolor='black')
-        ax4.set_title("Histogram: Confirmed Cases Distribution")
-        ax4.set_xlabel("Confirmed Cases")
-        ax4.set_ylabel("Frequency (Log Scale)")
+        fig4, ax4 = plt.subplots(figsize=(6, 4.5))
+        ax4.hist(latest_data["Confirmed"].dropna(), bins=20, color='#64B5F6', edgecolor='#1565C0')
+        ax4.set_title("Histogram: Confirmed Cases Distribution", fontsize=11, fontweight='bold', pad=10)
+        ax4.set_xlabel("Confirmed Cases Range (X-Axis)", fontsize=10, fontweight='semibold')
+        ax4.set_ylabel("Frequency of Records - Log Scale (Y-Axis)", fontsize=10, fontweight='semibold')
         ax4.set_yscale("log")
+        ax4.grid(True, linestyle="--", alpha=0.4)
         st.pyplot(fig4)
         
     st.markdown("---")
@@ -415,18 +463,29 @@ elif st.session_state["current_page"] == "Country Analysis":
     daily_c = country_data.groupby("Date")[["Confirmed", "Recovered", "Deaths"]].sum().reset_index()
     
     fig5, (ax_c1, ax_c2, ax_c3) = plt.subplots(3, 1, figsize=(8, 10))
-    ax_c1.plot(daily_c["Date"], daily_c["Confirmed"], color='blue')
-    ax_c1.set_title(f"{selected_country}: Confirmed Trend")
-    ax_c1.set_ylabel("Cases")
+    ax_c1.plot(daily_c["Date"], daily_c["Confirmed"], color='#1E88E5', linewidth=1.8)
+    ax_c1.set_title(f"{selected_country}: Confirmed Cases Trend", fontsize=11, fontweight='bold')
+    ax_c1.set_xlabel("Date (Timeline)", fontsize=9, fontweight='semibold')
+    ax_c1.set_ylabel("Confirmed Cases", fontsize=9, fontweight='semibold')
+    ax_c1.grid(True, linestyle="--", alpha=0.4)
+    ax_c1.tick_params(axis='x', rotation=30, labelsize=8)
+    ax_c1.tick_params(axis='y', labelsize=8)
     
-    ax_c2.plot(daily_c["Date"], daily_c["Recovered"], color='green')
-    ax_c2.set_title(f"{selected_country}: Recovered Trend")
-    ax_c2.set_ylabel("Cases")
+    ax_c2.plot(daily_c["Date"], daily_c["Recovered"], color='#43A047', linewidth=1.8)
+    ax_c2.set_title(f"{selected_country}: Recovered Cases Trend", fontsize=11, fontweight='bold')
+    ax_c2.set_xlabel("Date (Timeline)", fontsize=9, fontweight='semibold')
+    ax_c2.set_ylabel("Recovered Cases", fontsize=9, fontweight='semibold')
+    ax_c2.grid(True, linestyle="--", alpha=0.4)
+    ax_c2.tick_params(axis='x', rotation=30, labelsize=8)
+    ax_c2.tick_params(axis='y', labelsize=8)
     
-    ax_c3.plot(daily_c["Date"], daily_c["Deaths"], color='red')
-    ax_c3.set_title(f"{selected_country}: Deaths Trend")
-    ax_c3.set_ylabel("Deaths")
-    ax_c3.set_xlabel("Date")
+    ax_c3.plot(daily_c["Date"], daily_c["Deaths"], color='#E53935', linewidth=1.8)
+    ax_c3.set_title(f"{selected_country}: Deaths Trend", fontsize=11, fontweight='bold')
+    ax_c3.set_xlabel("Date (Timeline)", fontsize=9, fontweight='semibold')
+    ax_c3.set_ylabel("Reported Deaths", fontsize=9, fontweight='semibold')
+    ax_c3.grid(True, linestyle="--", alpha=0.4)
+    ax_c3.tick_params(axis='x', rotation=30, labelsize=8)
+    ax_c3.tick_params(axis='y', labelsize=8)
     
     plt.tight_layout()
     st.pyplot(fig5)
@@ -484,12 +543,12 @@ elif st.session_state["current_page"] == "State or Province Analysis":
     # Scatter Plot: Confirmed Cases vs Deaths Correlation
     st.markdown("---")
     st.subheader(f"Scatter Plot: Confirmed vs Deaths in {st_state}")
-    fig6, ax6 = plt.subplots()
-    ax6.scatter(state_data["Confirmed"], state_data["Deaths"], alpha=0.6, color='purple')
-    ax6.set_xlabel("Confirmed Cases")
-    ax6.set_ylabel("Deaths")
-    ax6.set_title(f"Confirmed vs Deaths Correlation ({st_state})")
-    ax6.grid(True, linestyle="--", alpha=0.5)
+    fig6, ax6 = plt.subplots(figsize=(7, 4.5))
+    ax6.scatter(state_data["Confirmed"], state_data["Deaths"], alpha=0.6, color='#7B1FA2', edgecolors='none')
+    ax6.set_xlabel("Confirmed Cases (X-Axis)", fontsize=10, fontweight='semibold')
+    ax6.set_ylabel("Reported Deaths (Y-Axis)", fontsize=10, fontweight='semibold')
+    ax6.set_title(f"Confirmed Cases vs Deaths Correlation ({st_state})", fontsize=11, fontweight='bold', pad=10)
+    ax6.grid(True, linestyle="--", alpha=0.4)
     st.pyplot(fig6)
     
     st.markdown("---")
@@ -553,8 +612,10 @@ elif st.session_state["current_page"] == "Comparison and Trend":
         
         fig7, ax7 = plt.subplots(figsize=(8, 5))
         comp_df.plot(kind='bar', ax=ax7, colormap="viridis")
-        ax7.set_title(f"Cases Comparison: {country1} vs {country2}")
-        ax7.set_ylabel("Number of Cases")
+        ax7.set_title(f"Cases Comparison: {country1} vs {country2}", fontsize=11, fontweight='bold', pad=10)
+        ax7.set_xlabel("Selected Countries (X-Axis)", fontsize=10, fontweight='semibold')
+        ax7.set_ylabel("Number of Cases (Y-Axis)", fontsize=10, fontweight='semibold')
+        ax7.grid(True, linestyle="--", alpha=0.4, axis='y')
         plt.xticks(rotation=0)
         plt.tight_layout()
         st.pyplot(fig7)

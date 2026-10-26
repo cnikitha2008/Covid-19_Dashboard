@@ -189,13 +189,10 @@ def render_back_button(location_key="top"):
 # ==============================================================================
 if st.session_state["current_page"] == "Home":
     
-    # Centered Header with title, subtitle, and badge
+    # Centered Header with title and subtitle
     st.markdown(
         """
         <div style="text-align: center; padding-top: 1.2rem; padding-bottom: 1.5rem;">
-            <div style="display: inline-block; padding: 4px 14px; background: rgba(30, 136, 229, 0.08); color: #1E88E5; border-radius: 20px; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.8px; margin-bottom: 0.75rem; border: 1px solid rgba(30, 136, 229, 0.25);">
-                🌍 EPIDEMIOLOGICAL DATA INTELLIGENCE
-            </div>
             <h1 style="font-size: 2.35rem; font-weight: 800; margin: 0; padding-bottom: 0.4rem; letter-spacing: -0.5px;">
                 COVID-19 DATA ANALYSIS DASHBOARD
             </h1>
